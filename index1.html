@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <svg style="margin: 10px">
+        <path d="M 100 100 L 100 0 L 0 0 L 0 100 Z" stroke="#333" fill="none"></path>
+        <path d="M 70 50 L 50 30 L 70 30 L 30 70 L 50 70 L 30 50" stroke="#333" fill="none"></path>
+    </svg>
+    <div class="canvas-container">
+        <canvas id="cnv" height="1000px" width="1000px"></canvas>
+    </div>
+
+    <style>
+        * {
+  box-sizing: border-box;
+  transition: 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+}
+body {
+  transition: 0s;
+}
+.canvas-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 720px;
+  width: 720px;
+}
+#cnv {
+  height: 100%;
+  width: 100%;
+  border: 1px solid;
+}
+@media screen and (max-height: 800px) {
+  .canvas-container {
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+@media screen and (max-width: 900px) {
+  .canvas-container {
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+
+    </style>
+    <script>
+// --- Notes ---
+// Making a phone unlock screen
+
+// --- TO DO ---
+// Work on dot-skipping logic
+// Allow for resetting the password
+
+// --- Setup -----------------------------------------------
+// - Canvas Context -
+var ctx = document.getElementById('cnv').getContext('2d');
+var container = document.getElementsByClassName('canvas-container')[0];
+
+// - Node Constructor -
+var nodeNum = 0;
+function Node(x,y) {
+    this.id = nodeNum++;
+    this.x = x;
+    this.y = y;
+    this.r = 10;
+    this.proxR = 25;
+    this.connected = false;
+    this.connect = function() {
+        if(!currentPattern.includes(this.id)) {
+            this.connected = true;
+            currentPattern.push(this.id);
+        }
+    };
+    this.proxCheck = function() {
+        var dx = this.x - cursor.x, dy = this.y - cursor.y, dist = Math.sqrt(dx * dx + dy * dy);
+        return (dist < this.proxR);
+    };
+}
+// - Nodes and pattern variables -
+var nodes = [];
+var currentPattern = [];
+var correctPattern = [5,1,2,4,6,7,3];
+var checkTimer = 0;
+// ---------------------------------------------------------
+
+// --- Input Handling --------------------------------------
+var mouseHeld; // To track if the mouse click is held
+container.addEventListener('mousedown', function(e){ if(!checkTimer) { mouseHeld = true; } });
+container.addEventListener('mouseup', function(e){
+    mouseHeld = false; 
+    if(!checkTimer) {
+       (currentPattern.length > 1)?checkPattern():clearPattern();
+    }
+});
+
+var cursor = { x: 0, y: 0 };
+container.addEventListener('mousemove', function(e){
+    var dimensions = container.getBoundingClientRect();
+    cursor.x = (e.pageX - (container.offsetLeft - dimensions.width/2)) * (ctx.canvas.width/dimensions.width);
+    cursor.y = (e.pageY - (container.offsetTop - dimensions.height/2)) * (ctx.canvas.height/dimensions.height);
+});
+// ---------------------------------------------------------
+
+// --- Functions -------------------------------------------
+function init() {
+    reset();
+    frameFunction();
+};
+function reset() {
+    // Reset stuff
+    nodes = [];
+    currentPattern = [];
+    nodes.push(new Node(300,300));
+    nodes.push(new Node(500,300));
+    nodes.push(new Node(700,300));
+    nodes.push(new Node(300,500));
+    nodes.push(new Node(500,500));
+    nodes.push(new Node(700,500));
+    nodes.push(new Node(300,700));
+    nodes.push(new Node(500,700));
+    nodes.push(new Node(700,700));
+};
+
+function frameFunction() {
+    coverFrame();
+    drawNodes();
+    
+    if(checkTimer) {
+        if(--checkTimer){
+            drawPatternLine(arrayCheck(currentPattern,correctPattern)?'#2D1':'red');
+        } else {
+            clearPattern();
+        }
+    } else if(mouseHeld) { 
+        for(var i in nodes) {
+            if(nodes[i].proxCheck() && !nodes[i].connected) { nodes[i].connect(); }
+        }
+        if(currentPattern.length) { drawPatternLine(); }
+    }
+    
+    // Next Frame
+    requestAnimationFrame(frameFunction);
+};
+
+function coverFrame() {
+    ctx.fillStyle = 'rgba(0,10,35,1)'; // change opacity for fade
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
+function drawNodes() {
+    ctx.lineWidth = 2;
+    for(var i in nodes) {
+        ctx.beginPath();
+        ctx.fillStyle = nodes[i].connected?'rgba(255,255,255,1)':'rgba(255,255,255,0.5)';
+        if(checkTimer && nodes[i].connected) {
+            ctx.fillStyle = arrayCheck(currentPattern,correctPattern)?'#2D1':'red';
+        }
+        ctx.arc(nodes[i].x,nodes[i].y,nodes[i].r + nodes[i].connected*3,0,2*Math.PI);
+        ctx.fill();
+    }
+}
+
+function drawPatternLine(color) {
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = color||'rgba(255,255,255,1';
+    ctx.beginPath();
+    ctx.lineTo(nodes[currentPattern[0]].x,nodes[currentPattern[0]].y);
+    // Draw the lines between the nodes
+    if(currentPattern.length > 1) {
+        for(var i = 1; i < currentPattern.length; i++) {            
+            ctx.lineTo(nodes[currentPattern[i]].x,nodes[currentPattern[i]].y);
+        }
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.lineTo(
+            nodes[currentPattern[currentPattern.length - 1]].x,
+            nodes[currentPattern[currentPattern.length - 1]].y
+        );
+    }
+    // Draw line to the mouse - seperate from multi-node line stroke to avoid sharp point
+    if(mouseHeld && !checkTimer) {
+        ctx.lineTo(cursor.x,cursor.y);
+        ctx.stroke();
+    }
+}
+
+function clearPattern() { 
+    for(var i = 0; i < nodes.length; i++) { nodes[i].connected = false; }
+    currentPattern = []; 
+}
+
+function arrayCheck(a1,a2) {
+    for(var i in a1) { if(a1[i] !== a2[i]) { return false; } }
+    return(a1.length === a2.length);
+}
+
+function checkPattern() {
+    if(arrayCheck(currentPattern,correctPattern)) { 
+        // console.log('Correct Pattern');
+        // Do Stuff
+        checkTimer = 150;
+    } else { 
+        // console.log('Incorrect Pattern');
+        checkTimer = 75;
+    }
+}
+// ---------------------------------------------------------
+
+init();
+    </script>
+</body>
+</html>
