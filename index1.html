@@ -100,12 +100,28 @@ container.addEventListener('mouseup', function(e){
     }
 });
 
+container.addEventListener('touchend', function (e) {
+    mouseHeld = false;
+    if (!checkTimer) {
+        (currentPattern.length > 1) ? checkPattern() : clearPattern();
+    }
+});
+
 var cursor = { x: 0, y: 0 };
 container.addEventListener('mousemove', function(e){
     var dimensions = container.getBoundingClientRect();
     cursor.x = (e.pageX - (container.offsetLeft - dimensions.width/2)) * (ctx.canvas.width/dimensions.width);
     cursor.y = (e.pageY - (container.offsetTop - dimensions.height/2)) * (ctx.canvas.height/dimensions.height);
 });
+
+container.addEventListener('touchmove', function (e) {
+    var touch = e.touches[0];
+    var dimensions = container.getBoundingClientRect();
+    cursor.x = (touch.pageX - (container.offsetLeft - dimensions.width / 2)) * (ctx.canvas.width / dimensions.width);
+    cursor.y = (touch.pageY - (container.offsetTop - dimensions.height / 2)) * (ctx.canvas.height / dimensions.height);
+    e.preventDefault();
+});
+
 // ---------------------------------------------------------
 
 // --- Functions -------------------------------------------
