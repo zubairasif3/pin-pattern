@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .lock-pattern {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+    }
+
+    .circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: #3498db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+  </style>
+  <title>Mobile Lock Pattern</title>
+</head>
+<body>
+
+<div class="lock-pattern" id="lockPattern">
+  <div class="circle" data-index="1"></div>
+  <div class="circle" data-index="2"></div>
+  <div class="circle" data-index="3"></div>
+  <div class="circle" data-index="4"></div>
+  <div class="circle" data-index="5"></div>
+  <div class="circle" data-index="6"></div>
+  <div class="circle" data-index="7"></div>
+  <div class="circle" data-index="8"></div>
+  <div class="circle" data-index="9"></div>
+</div>
+
+<script>
+  const lockPattern = document.getElementById('lockPattern');
+  const selectedCircles = [];
+
+  lockPattern.addEventListener('click', (event) => {
+    const circle = event.target;
+    const index = circle.dataset.index;
+
+    if (index) {
+      if (!selectedCircles.includes(index)) {
+        selectedCircles.push(index);
+        circle.style.backgroundColor = '#2ecc71'; // Change color on selection
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
