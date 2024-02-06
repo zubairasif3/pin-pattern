@@ -114,6 +114,96 @@ $(canvasid).on('mousemove',function(e){
         }
 });
 
+$(canvasid).bind('touchend',function(e){
+    if(timer){
+        clearTimeout(timer);
+    }
+    resetScreen();
+    startx=e.offsetX;
+    starty=e.offsetY;
+    index=1;
+    for(i=0;i<dots;++i){
+        if(rects[i].contains(new Point(startx,starty))){
+            startx=rects[i].getCenterX();
+            starty=rects[i].getCenterY();
+            endx=startx;
+            endy=starty;
+            trues[i]=true;
+            pattern[i]=index;
+            start=i;
+            drawing=true;
+            break;
+        }
+    }
+  });
+  $(canvasid).bind('touchstart',function(e){
+    drawing=false;
+    printPattern();
+    if(settingPattern==true){
+        for(i=0;i<dots;++i){
+            cpattern[i]=pattern[i];
+        }
+    }else{
+        if(patternCheck()==true){
+            patternCorrect=true;
+        }
+    }
+    timer=setTimeout(function(){
+        if(patternCorrect==true){
+            clearInterval(interval);
+        }
+        settingPattern=false;
+        patternCorrect=false;
+        // resetScreen();
+    },1500);
+  });
+  $(canvasid).bind('touchend',function(e){
+    if(drawing==true){
+        endx=e.offsetX;
+        endy=e.offsetY;
+        for(i=0;i<rects.length;++i){
+            if(trues[i]!=true){
+                if(rects[i].contains(new Point(endx,endy))){
+                    index+=1;
+                    enddx=rects[i].getCenterX();
+                    enddy=rects[i].getCenterY();
+                    lines.push(new Line(startx, starty, enddx, enddy));
+                    startx=enddx;
+                    starty=enddy;
+                    end=i;
+                    if((start==0&&end==2)||(start==2&&end==0)){
+                        if(trues[1]==false){
+                        trues[1]=true;pattern[1]=index;index+=1;}}
+                    if((start==3&&end==5)||(start==5&&end==3)){
+                        if(trues[4]==false){
+                        trues[4]=true;pattern[4]=index;index+=1;}}
+                    if((start==6&&end==8)||(start==8&&end==6)){
+                        if(trues[7]==false){
+                        trues[7]=true;pattern[7]=index;index+=1;}}
+                    if((start==0&&end==6)||(start==6&&end==0)){
+                        if(trues[3]==false){
+                        trues[3]=true;pattern[3]=index;index+=1;}}
+                    if((start==1&&end==7)||(start==7&&end==1)){
+                        if(trues[4]==false){
+                        trues[4]=true;pattern[4]=index;index+=1;}}
+                    if((start==2&&end==8)||(start==8&&end==2)){
+                        if(trues[5]==false){
+                        trues[5]=true;pattern[5]=index;index+=1;}}
+                    if((start==0&&end==8)||(start==8&&end==0)){
+                        if(trues[4]==false){
+                        trues[4]=true;pattern[4]=index;index+=1;}}
+                    if((start==2&&end==6)||(start==6&&end==2)){
+                        if(trues[4]==false){
+                        trues[4]=true;pattern[4]=index;index+=1;}}
+                        start=i;
+                        trues[i]=true;
+                        pattern[i]=index;
+                        break;
+                    }
+                }
+            }
+        }
+  });
 //////////////////// Setting Interval For Repainting The Screen ///////////////////////////
 interval=setInterval(paint,25/2);
 });
