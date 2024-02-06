@@ -114,7 +114,7 @@ $(canvasid).on('mousemove',function(e){
         }
 });
 
-$(canvasid).bind('touchend',function(e){
+$(canvasid).on('touchstart',function(e){
     if(timer){
         clearTimeout(timer);
     }
@@ -135,8 +135,8 @@ $(canvasid).bind('touchend',function(e){
             break;
         }
     }
-  });
-  $(canvasid).bind('touchstart',function(e){
+});
+$(canvasid).on('touchend',function(e){
     drawing=false;
     printPattern();
     if(settingPattern==true){
@@ -156,8 +156,8 @@ $(canvasid).bind('touchend',function(e){
         patternCorrect=false;
         // resetScreen();
     },1500);
-  });
-  $(canvasid).bind('touchend',function(e){
+});
+$(canvasid).on('touchmove',function(e){
     if(drawing==true){
         endx=e.offsetX;
         endy=e.offsetY;
@@ -203,7 +203,7 @@ $(canvasid).bind('touchend',function(e){
                 }
             }
         }
-  });
+});
 //////////////////// Setting Interval For Repainting The Screen ///////////////////////////
 interval=setInterval(paint,25/2);
 });
